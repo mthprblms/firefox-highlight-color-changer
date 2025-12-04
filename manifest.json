@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Custom Highlight Color",
+  "version": "1.0",
+  "description": "Change the highlight color of selected text",
+}
+},
+"icons": {
+"48": "icons/highlight-48.png",
+"96": "icons/highlight-96.png",
+"128": "icons/highlight-128.png"
+},
+"content_scripts": [
+{
+  "matches": [
+    "<all_urls>"
+  ],
+  "js": [
+    "content.js"
+  ]
+}
+]
+}

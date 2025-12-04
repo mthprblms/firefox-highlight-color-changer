@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 250px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+
+    .color-picker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.active {
+      border-color: #333;
+      transform: scale(1.1);
+    }
+
+    #customColor {
+      width: 100%;
+      height: 40px;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+
+    .preset-label {
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+      color: #666;
+    }
+
+    .section {
+      margin: 15px 0;
+    }
+
+    label {
+      display: block;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      background: #0060df;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0250bb;
+    }
+  </style>
+</head>
+
+<body>
+  <h3 style="margin-top: 0;">Highlight Color</h3>
+
+  <div class="section">
+    <div class="color-picker">
+      <div class="color-option" data-color="#ffeb3b" style="background-color: #ffeb3b;" title="Yellow"></div>
+      <div class="color-option" data-color="#4caf50" style="background-color: #4caf50;" title="Green"></div>
+      <div class="color-option" data-color="#2196f3" style="background-color: #2196f3;" title="Blue"></div>
+      <div class="color-option" data-color="#ff9800" style="background-color: #ff9800;" title="Orange"></div>
+      <div class="color-option" data-color="#e91e63" style="background-color: #e91e63;" title="Pink"></div>
+      <div class="color-option" data-color="#9c27b0" style="background-color: #9c27b0;" title="Purple"></div>
+      <div class="color-option" data-color="#00bcd4" style="background-color: #00bcd4;" title="Cyan"></div>
+      <div class="color-option" data-color="#ff5722" style="background-color: #ff5722;" title="Red"></div>
+    </div>
+
+    <input type="color" id="customColor" value="#ffeb3b">
+
+    <label>
+      <input type="checkbox" id="highlightEnabled" checked> Enable highlighting
+    </label>
+
+    <label>
+      <input type="range" id="opacitySlider" min="10" max="100" value="50">
+      Opacity: <span id="opacityValue">50%</span>
+    </label>
+
+    <button id="clearHighlights">Clear All Highlights</button>
+    <button id="copyHighlights">Copy All Highlights</button>
+    <button id="applyToSelection">Apply to Selected Text</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
