@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+  "name": "Custom Highlight Color",
+  "version": "1.0",
+  "description": "Easily customize the color of selected text. Features include saving highlights, copying all selections, and email integration. Perfect for research.",
+  "author": "Implied Intellect <impliedintellect@gmail.com>",
+  "homepage_url": "https://impliedintellect.com",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "clipboardWrite",
+    "contextMenus",
+    "downloads"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "browser_action": {
+    "default_title": "Highlight Color Changer",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icons/highlight-48.png",
+      "96": "icons/highlight-96.png",
+      "128": "icons/highlight-128.png"
+    }
+  },
+  "icons": {
+    "48": "icons/highlight-48.png",
+    "96": "icons/highlight-96.png",
+    "128": "icons/highlight-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}

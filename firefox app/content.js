@@ -51,18 +51,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Enable text selection highlighting
 function enableHighlighting() {
-  // Remove existing listeners if any
   disableHighlighting();
-
-  // Add mouseup listener for text selection
   document.addEventListener('mouseup', handleTextSelection);
-
-  // Also handle keyboard selections
   document.addEventListener('keyup', handleTextSelection);
-
-  // Handle Ctrl+C to copy all highlights if no selection
   document.addEventListener('keydown', handleCopyShortcut);
-
   console.log('Highlighting enabled');
 }
 
@@ -79,7 +71,6 @@ function handleTextSelection() {
   const selection = window.getSelection();
   if (selection.toString().trim().length === 0) return;
 
-  // Check if selection is within an editable element
   if (isEditableElement(selection.anchorNode)) return;
 
   highlightSelectedText(highlightSettings.color, highlightSettings.opacity);
@@ -123,6 +114,66 @@ function highlightSelectedText(color, opacity) {
       selection.removeAllRanges();
     }
   }
+}
+const selection = window.getSelection();
+if (!selection.rangeCount) return;
+const range = selection.getRangeAt(0);
+if (selection.toString().trim().length === 0) return;
+const rgbaColor = hexToRgba(color, opacity / 100);
+const walker = document.createTreeWalker(
+  range.commonAncestorContainer,
+  NodeFilter.SHOW_TEXT,
+  {
+    acceptNode: function (node) {
+      // Skip text inside anchor tags to preserve link functionality
+      if (node.parentElement && node.parentElement.closest('a')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  }
+);
+const nodes = [];
+let node;
+while ((node = walker.nextNode())) {
+  nodes.push(node);
+}
+nodes.forEach(textNode => {
+  const span = document.createElement('span');
+  span.style.backgroundColor = rgbaColor;
+  span.style.padding = '1px 0';
+  span.style.borderRadius = '2px';
+  span.className = 'custom-highlight';
+  span.dataset.highlighted = 'true';
+  textNode.parentNode.replaceChild(span, textNode);
+  span.appendChild(textNode);
+});
+selection.removeAllRanges();
+}
+
+NodeFilter.SHOW_TEXT,
+{
+  acceptNode: function (node) {
+    return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+  }
+}
+);
+const nodes = [];
+let node;
+while ((node = walker.nextNode())) {
+  nodes.push(node);
+}
+nodes.forEach(textNode => {
+  const span = document.createElement('span');
+  span.style.backgroundColor = rgbaColor;
+  span.style.padding = '1px 0';
+  span.style.borderRadius = '2px';
+  span.className = 'custom-highlight';
+  span.dataset.highlighted = 'true';
+  textNode.parentNode.replaceChild(span, textNode);
+  span.appendChild(textNode);
+});
+selection.removeAllRanges();
 }
 
 // Handle complex selections that cross element boundaries
@@ -171,7 +222,6 @@ function copyAllHighlights() {
   if (textToCopy.length === 0) return;
 
   navigator.clipboard.writeText(textToCopy).then(() => {
-    // Optional: Show a brief toast or notification
     console.log('Highlights copied to clipboard');
   }).catch(err => {
     console.error('Failed to copy highlights:', err);
@@ -191,13 +241,10 @@ function getAllHighlightsText() {
 
 // Handle Ctrl+C shortcut
 function handleCopyShortcut(e) {
-  // Check for Ctrl+C (or Cmd+C on Mac)
   if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
     const selection = window.getSelection();
-    // Only copy all highlights if there is NO active text selection
     if (!selection || selection.toString().length === 0) {
       copyAllHighlights();
-      // Prevent default copy action (though it wouldn't do much with no selection)
       e.preventDefault();
     }
   }
