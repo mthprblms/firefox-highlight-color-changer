@@ -69,11 +69,14 @@ function disableHighlighting() {
 
 // Handle text selection
 function handleTextSelection() {
-    const selection = window.getSelection();
-    if (selection.toString().trim().length === 0) return;
 
+    const selection = window.getSelection();
+    if (!selection || selection.toString().trim().length === 0) return;
+    // Skip editable elements
     if (isEditableElement(selection.anchorNode)) return;
 
+
+    // Apply highlight using current settings
     highlightSelectedText(highlightSettings.color, highlightSettings.opacity);
 }
 
@@ -87,48 +90,90 @@ function isEditableElement(node) {
 
 // Apply highlight to selected text
 function highlightSelectedText(color, opacity) {
+
     const selection = window.getSelection();
     if (selection.rangeCount === 0 || selection.toString().trim().length === 0) return;
 
     const range = selection.getRangeAt(0);
 
-    // Create highlight span
-    const highlightSpan = document.createElement('span');
+
+
+    // Apply highlight styles to a node (span or link)
+
+
     const rgbaColor = hexToRgba(color, opacity / 100);
-    highlightSpan.style.backgroundColor = rgbaColor;
-    highlightSpan.style.padding = '1px 0';
-    highlightSpan.style.borderRadius = '2px';
-    highlightSpan.className = 'custom-highlight';
-    highlightSpan.dataset.highlighted = 'true';
 
-    try {
-        // Surround the selected text with our highlight span
-        range.surroundContents(highlightSpan);
+    // For simple text selections (within a single text node), use surroundContents
+    if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
+        const highlightSpan = document.createElement('span');
+        highlightSpan.style.backgroundColor = rgbaColor;
+        highlightSpan.style.display = 'inline';
+        highlightSpan.style.padding = '0 0';
+        highlightSpan.style.borderRadius = '2px';
+        highlightSpan.className = 'custom-highlight';
+        highlightSpan.dataset.highlighted = 'true';
 
-        // Clear the selection
-        selection.removeAllRanges();
-    } catch (e) {
-        // If surrounding fails (e.g., selection crosses element boundaries),
-        // try a different approach
-        if (e.name === 'InvalidStateError' || e.name === 'HierarchyRequestError') {
+        try {
+            range.surroundContents(highlightSpan);
+            selection.removeAllRanges();
+        } catch (e) {
+            // Fallback if something unexpected happens
             highlightComplexSelection(range, rgbaColor);
             selection.removeAllRanges();
         }
+    } else {
+        // For mixed content (text + links, or across elements), use the robust recursive method
+        highlightComplexSelection(range, rgbaColor);
+        selection.removeAllRanges();
     }
 }
 
 // Handle complex selections that cross element boundaries
 function highlightComplexSelection(range, rgbaColor) {
-    const documentFragment = range.extractContents();
-    const wrapper = document.createElement('span');
-    wrapper.style.backgroundColor = rgbaColor;
-    wrapper.style.padding = '1px 0';
-    wrapper.style.borderRadius = '2px';
-    wrapper.className = 'custom-highlight';
-    wrapper.dataset.highlighted = 'true';
+    // Extract the selected fragment
+    const fragment = range.extractContents();
 
-    wrapper.appendChild(documentFragment);
-    range.insertNode(wrapper);
+    // Helper: wrap a text node in a styled span
+    function wrapTextNode(textNode) {
+        const span = document.createElement('span');
+        span.style.backgroundColor = rgbaColor;
+        span.style.display = 'inline';
+        span.style.padding = '0 0';
+        span.style.borderRadius = '2px';
+        span.className = 'custom-highlight';
+        span.dataset.highlighted = 'true';
+        span.textContent = textNode.textContent;
+        return span;
+    }
+
+    // Recursively walk the fragment and replace text nodes
+    function processNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const wrapped = wrapTextNode(node);
+            node.parentNode.replaceChild(wrapped, node);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            // If the element is a link, style it directly without breaking the link
+            if (node.tagName === 'A') {
+                node.style.backgroundColor = rgbaColor;
+                node.style.display = 'inline';
+                node.style.padding = '0 0';
+                node.style.borderRadius = '2px';
+                node.classList.add('custom-highlight');
+                node.dataset.highlighted = 'true';
+                // Don't recurse into the link to avoid double-wrapping text
+                return;
+            }
+            // Recurse into children
+            const children = Array.from(node.childNodes);
+            children.forEach(processNode);
+        }
+    }
+
+    const topNodes = Array.from(fragment.childNodes);
+    topNodes.forEach(processNode);
+
+    // Insert the processed fragment back into the document at the original range position
+    range.insertNode(fragment);
 }
 
 // Clear all highlights

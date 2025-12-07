@@ -57,11 +57,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     // In MV3 service workers, we can't use URL.createObjectURL directly on Blobs easily
                     // But chrome.downloads.download accepts a data URL
                     const dataUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(response.text);
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+                    const date = new Date().toISOString().split('T')[0];
+                    const hostname = new URL(tab.url).hostname;
 
                     chrome.downloads.download({
                         url: dataUrl,
-                        filename: `highlights-${timestamp}.txt`,
+                        filename: `highlight-${date}-${hostname}.txt`,
                         saveAs: true
                     });
                 }

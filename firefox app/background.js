@@ -52,11 +52,12 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
                 if (response && response.text) {
                     const blob = new Blob([response.text], { type: "text/plain" });
                     const url = URL.createObjectURL(blob);
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+                    const date = new Date().toISOString().split('T')[0];
+                    const hostname = new URL(tab.url).hostname;
 
                     browser.downloads.download({
                         url: url,
-                        filename: `highlights-${timestamp}.txt`,
+                        filename: `highlight-${date}-${hostname}.txt`,
                         saveAs: true
                     });
                 }
